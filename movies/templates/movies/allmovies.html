@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Objetos</title>
+</head>
+<body>
+
+    <h1>Lista de Objetos</h1>
+
+    {% if objetos %}
+        <ul>
+            {% for obj in objetos %}
+                <li>
+                <b> {{ obj.title }} </b> - {{ obj.overview }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No hay objetos disponibles.</p>
+    {% endif %}
+
+</body>
+</html>

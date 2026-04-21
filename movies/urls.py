@@ -2,11 +2,17 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
-    path('all/', all_movies),
-    path('<int:movie_id>/', movie),
+    path('', index, name='index'),
+
+    path('movies/', all_movies, name='all_movies'),
+
+    path('movie/<int:movie_id>/', movie, name='movie_detail'),
+
+    path('movie/<int:movie_id>/reviews/', movie_reviews, name='movie_reviews'),
+
+    path('movie/<int:movie_id>/add-review/', add_review, name='add_review'),
+
+    path('movie/<int:movie_id>/add-like/', add_like, name='add_like'),
+
     path('saludo/<int:veces>/', saludo),
-    path('movie_like/add/<int:movie_id>/', add_like),
-    path('movie_review/add/<int:movie_id>/', add_review),
-    path('movie_reviews/<int:movie_id>/', movie_reviews, name='movie_reviews'),
-    path('', index)
 ]

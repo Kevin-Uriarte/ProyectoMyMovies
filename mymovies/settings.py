@@ -33,9 +33,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['52.87.50.207']
-print(ALLOWED_HOSTS)
-
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -87,10 +85,10 @@ WSGI_APPLICATION = 'mymovies.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "django",
-        "USER": "ubuntu",
-        "PASSWORD": "",
-        "HOST": "/tmp",
+        "NAME": "mymovies",
+        "USER": "mymovies_user",
+        "PASSWORD": "chivas2026",
+        "HOST": "Localhost",
         "PORT": "5432",
     }
 }

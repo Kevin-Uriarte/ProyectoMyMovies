@@ -84,8 +84,8 @@ WSGI_APPLICATION = 'mymovies.wsgi.application'
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "mymovies",
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": str(BASE_DIR / 'db.dqlite3'),
         "USER": "mymovies_user",
         "PASSWORD": "chivas2026",
         "HOST": "Localhost",
@@ -139,3 +139,4 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+TMDB_API_KEY = '288d196bb8160b95e05bd6b2cf8db23b'

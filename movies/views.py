@@ -24,6 +24,7 @@ def _movie_or_tmdb(movie_id):
 
 
 def _get_safe_next_url(request, fallback_url):
+    # Valida la URL de regreso para evitar redirecciones abiertas a dominios externos.
     next_url = request.POST.get('next') or request.GET.get('next')
     if next_url and url_has_allowed_host_and_scheme(
         next_url,
@@ -41,6 +42,7 @@ def index(request):
     Página principal: películas en cartelera desde TMDB.
     Tiene paginación simple (botón Siguiente / Anterior).
     """
+    # La portada no depende de la DB local; se alimenta en tiempo real desde la API externa.
     page = int(request.GET.get('page', 1))
     movies = tmdb.get_now_playing(page=page)
     return render(request, 'movies/index.html', {
@@ -53,6 +55,7 @@ def index(request):
 
 def more_movies(request):
     """HTMX endpoint: devuelve solo las tarjetas de películas (sin layout)."""
+    # Esta "página parcial" se usa para cargar más películas sin recargar toda la portada.
     page = int(request.GET.get('page', 2))
     movies = tmdb.get_now_playing(page=page)
     return render(request, 'movies/partials/movie_cards.html', {
@@ -64,6 +67,7 @@ def more_movies(request):
 # ─── all movies (local DB) ───────────────────────────────────────────────────
 
 def all_movies(request):
+    # Muestra el catálogo guardado localmente, útil para distinguir datos persistidos de los datos traídos por API.
     movies = Movie.objects.all().order_by('-release_date')
     return render(request, 'movies/allmovies.html', {'objetos': movies})
 
@@ -83,6 +87,7 @@ def movie(request, movie_id):
     Detalle de una película usando tmdb_id.
     Primero busca en DB local; si no existe muestra datos de TMDB directamente.
     """
+    # Se mezcla información local y remota: TMDB aporta detalle vivo y la DB aporta reseñas del proyecto.
     movie_db = Movie.objects.filter(tmdb_id=movie_id).first()
     tmdb_data = tmdb.get_movie_detail(movie_id)
     credits = tmdb.get_movie_credits(movie_id)
@@ -96,6 +101,7 @@ def movie(request, movie_id):
     review_form = MovieReviewForm()
     user_review = None
     if request.user.is_authenticated and movie_db:
+        # Si el usuario ya opinó sobre la película, se carga su reseña para mostrarla o editarla.
         user_review = MovieReview.objects.filter(
             movie=movie_db, user=request.user).first()
 
@@ -116,6 +122,7 @@ def movie(request, movie_id):
 
 def actor_detail(request, person_id):
     """Detalle de un actor/director usando person_id de TMDB."""
+    # Presenta información de una persona del elenco o dirección y sus películas relacionadas.
     person_db = Person.objects.filter(pk=person_id).first()
     actor = tmdb.get_person_detail(person_id)
     credits = tmdb.get_person_credits(person_id)
@@ -130,6 +137,7 @@ def actor_detail(request, person_id):
 # ─── reseñas de una película ─────────────────────────────────────────────────
 
 def movie_reviews(request, movie_id):
+    # Reúne las reseñas locales de una película para enfocarse en la participación de los usuarios.
     movie_db = get_object_or_404(Movie, tmdb_id=movie_id)
     return render(request, 'movies/reviews.html', {'movie': movie_db})
 
@@ -142,7 +150,7 @@ def add_review(request, movie_id):
     Crea o actualiza la reseña del usuario para una película.
     Si la película no existe en DB local la crea primero.
     """
-    # Asegurar que la película exista en DB
+    # Antes de guardar una reseña, la película debe existir localmente para poder relacionarla con el usuario.
     movie_db = Movie.objects.filter(tmdb_id=movie_id).first()
     if not movie_db:
         tmdb_data = tmdb.get_movie_detail(movie_id)
@@ -170,11 +178,13 @@ def add_review(request, movie_id):
     if request.method == 'POST':
         form = MovieReviewForm(request.POST, instance=existing if existing else None)
         if form.is_valid():
+            # commit=False permite completar los campos que no vienen del formulario.
             review = form.save(commit=False)
             review.user = request.user
             review.movie = movie_db
             review.save()
             if request.headers.get('HX-Request'):
+                # HTMX espera una respuesta ligera y la redirección se envía por header.
                 return HttpResponse(
                     status=204,
                     headers={'HX-Redirect': reverse('movie_detail', kwargs={'movie_id': movie_id})})
@@ -196,6 +206,7 @@ def add_review(request, movie_id):
 @login_required
 @require_POST
 def delete_review(request, review_id):
+    # Esta acción permite al usuario mantener actualizada su participación eliminando una reseña previa.
     review = get_object_or_404(
         MovieReview.objects.select_related('movie'),
         id=review_id,
@@ -216,6 +227,7 @@ def delete_review(request, review_id):
 
 @login_required
 def add_like(request, movie_id):
+    # Captura una interacción rápida del usuario sobre una película, separada de la reseña formal.
     movie_db = Movie.objects.filter(tmdb_id=movie_id).first()
     if not movie_db:
         return redirect('movie_detail', movie_id=movie_id)
@@ -239,6 +251,7 @@ def add_like(request, movie_id):
 @login_required
 def user_reviews(request):
     """Todas las reseñas escritas por el usuario autenticado."""
+    # Funciona como historial personal para que el usuario vea todo lo que ya aportó al sistema.
     reviews = MovieReview.objects.filter(
         user=request.user).select_related('movie').order_by('-id')
     return render(request, 'movies/user_reviews.html', {'reviews': reviews})
@@ -247,6 +260,8 @@ def user_reviews(request):
 # ─── búsqueda ─────────────────────────────────────────────────────────────────
 
 def search(request):
+    # La búsqueda consulta TMDB en tiempo real para evitar mantener un catálogo local completo.
+    # Esta página permite descubrir películas por nombre y entrar después a su detalle.
     query = request.GET.get('search', '').strip()
     results = []
     if query:

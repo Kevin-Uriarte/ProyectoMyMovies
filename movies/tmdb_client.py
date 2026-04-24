@@ -6,12 +6,14 @@ import requests
 from django.conf import settings
 
 def _headers():
+    # Si existe token Bearer se usa ese método; si no, el cliente caerá en api_key.
     token = settings.TMDB_API_TOKEN
     if token:
         return {"Authorization": f"Bearer {token}", "accept": "application/json"}
     return {"accept": "application/json"}
 
 def _params(extra={}):
+    # Se centralizan parámetros comunes para no repetir idioma y autenticación en cada endpoint.
     p = {"language": "es-MX"}
     if not settings.TMDB_API_TOKEN:
         p["api_key"] = settings.TMDB_API_KEY
@@ -21,6 +23,7 @@ def _params(extra={}):
 BASE = settings.TMDB_BASE_URL
 
 def get_now_playing(page=1):
+    # Alimenta la portada con películas en cartelera directamente desde TMDB.
     r = requests.get(f"{BASE}/movie/now_playing",
                      headers=_headers(), params=_params({"page": page}), timeout=5)
     return r.json().get("results", []) if r.status_code == 200 else []
@@ -31,6 +34,7 @@ def get_popular(page=1):
     return r.json().get("results", []) if r.status_code == 200 else []
 
 def get_movie_detail(tmdb_id):
+    # El detalle vive en TMDB para mostrar información actualizada aunque no exista aún en la DB local.
     r = requests.get(f"{BASE}/movie/{tmdb_id}",
                      headers=_headers(), params=_params(), timeout=5)
     return r.json() if r.status_code == 200 else {}

@@ -1,0 +1,53 @@
+{% extends "movies/base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-5 py-8 max-w-4xl">
+  <div class="flex flex-col md:flex-row gap-8">
+    <!-- Foto -->
+    <div class="flex-shrink-0">
+      {% if actor.profile_path %}
+      <img class="w-44 rounded-xl shadow-lg"
+           src="https://image.tmdb.org/t/p/w300{{ actor.profile_path }}"
+           alt="{{ actor.name }}">
+      {% else %}
+      <div class="w-44 h-60 rounded-xl bg-gray-200 dark:bg-slate-700 flex items-center justify-center text-gray-400">Sin foto</div>
+      {% endif %}
+    </div>
+
+    <!-- Info -->
+    <div class="flex-1">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ actor.name }}</h1>
+      {% if actor.birthday %}
+      <p class="mt-1 text-sm text-gray-500">
+        Nacimiento: {{ actor.birthday }}
+        {% if actor.place_of_birth %} — {{ actor.place_of_birth }}{% endif %}
+      </p>
+      {% endif %}
+      {% if actor.biography %}
+      <p class="mt-4 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+        {{ actor.biography|truncatewords:80 }}
+      </p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Películas conocidas -->
+  {% if movies %}
+  <section class="mt-10">
+    <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Conocido/a por</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+      {% for m in movies %}
+      <a href="/movies/{{ m.id }}/" class="group">
+        {% if m.poster_path %}
+        <img class="w-full rounded-lg shadow group-hover:opacity-80 transition"
+             src="https://image.tmdb.org/t/p/w185{{ m.poster_path }}"
+             alt="{{ m.title }}" loading="lazy">
+        {% endif %}
+        <p class="text-xs mt-1 text-gray-600 dark:text-gray-300 truncate">{{ m.title }}</p>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endblock content %}

@@ -1,28 +1,31 @@
 from django import forms
+from movies.models import MovieReview
+
+_input_cls = ("block w-full rounded-2xl border border-slate-200 bg-white/95 px-4 py-3 text-base "
+              "text-slate-900 shadow-sm placeholder:text-slate-400 "
+              "focus:border-sky-400 focus:outline-none focus:ring-4 focus:ring-sky-300/25 sm:text-sm/6")
+
+_num_cls   = ("block w-full rounded-2xl border border-slate-200 bg-white/95 px-4 py-3 text-base "
+              "text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none "
+              "focus:ring-4 focus:ring-sky-300/25 sm:text-sm/6")
 
 
 class MovieCommentForm(forms.Form):
-    review = forms.CharField(label="Reseña", min_length=5, required=True, 
-                             widget =  forms.Textarea(attrs={"class": "block w-full rounded-md bg-white px-3" 
-                                  "py-1.5 text-base text-gray-900 outline outline-1"
-                                  "-outline-offset-1 outline-gray-300 placeholder:text-gray-400" 
-                                  "focus:outline focus:outline-2 focus:-outline-offset-2" 
-                                  "focus:outline-indigo-600 sm:text-sm/6"}) ) 
+    review = forms.CharField(
+        label="Comentario", min_length=5, required=True,
+        widget=forms.Textarea(attrs={"class": _input_cls, "rows": 3}))
 
-class MovieReviewForm(forms.Form):
-    rating = forms.IntegerField(label="Calificación", min_value=1, max_value=100, required=True)
-    
-    review = forms.CharField(label="Reseña", min_length=20 ,required=True, 
-                             widget =  forms.Textarea(attrs={"class": "block w-full rounded-md bg-white px-3" 
-                                  "py-1.5 text-base text-gray-900 outline outline-1"
-                                  "-outline-offset-1 outline-gray-300 placeholder:text-gray-400" 
-                                  "focus:outline focus:outline-2 focus:-outline-offset-2" 
-                                  "focus:outline-indigo-600 sm:text-sm/6"}) ) 
-    title = forms.CharField(label="Titulo", required=True)
-    
-    title.widget.attrs.update({"class": "block w-full rounded-md bg-white px-3" 
-                                  "py-1.5 text-base text-gray-900 outline outline-1"
-                                  "-outline-offset-1 outline-gray-300 placeholder:text-gray-400" 
-                                  "focus:outline focus:outline-2 focus:-outline-offset-2" 
-                                  "focus:outline-indigo-600 sm:text-sm/6"})
-    rating.widget.attrs.update({"class": "rounded-md bg-white py-1.5 pl-3 pr-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"})
+
+class MovieReviewForm(forms.ModelForm):
+    class Meta:
+        model = MovieReview
+        fields = ['title', 'rating', 'review']
+        labels = {'title': 'Título', 'rating': 'Calificación (1-100)', 'review': 'Reseña'}
+        widgets = {
+            'title':  forms.TextInput(attrs={"class": _input_cls,
+                                             "placeholder": "Título de tu reseña"}),
+            'rating': forms.NumberInput(attrs={"class": _num_cls,
+                                               "min": 1, "max": 100}),
+            'review': forms.Textarea(attrs={"class": _input_cls, "rows": 4,
+                                            "placeholder": "Escribe tu reseña…"}),
+        }

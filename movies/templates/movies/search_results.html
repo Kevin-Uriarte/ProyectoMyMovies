@@ -1,0 +1,31 @@
+{% extends "movies/base.html" %}
+
+{% block content %}
+<section class="mx-auto max-w-7xl px-5 py-10">
+  <div class="mb-8 rounded-[2rem] bg-white/80 p-8 shadow-[0_20px_70px_rgba(15,23,42,0.1)] backdrop-blur">
+    <p class="text-xs uppercase tracking-[0.3em] text-sky-600">Busqueda</p>
+    <h1 class="mt-3 text-3xl font-semibold text-slate-900">
+      Resultados para: <span class="text-sky-600">{{ query }}</span>
+    </h1>
+  </div>
+  <div class="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-5">
+    {% for movie in results %}
+    <a href="/movies/{{ movie.id }}/" class="group rounded-[1.75rem] border border-white/60 bg-white/80 p-3 shadow-[0_14px_50px_rgba(15,23,42,0.08)] transition hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(14,116,144,0.18)]">
+      {% if movie.poster_path %}
+      <img class="w-full rounded-2xl shadow-lg transition group-hover:opacity-85"
+           src="https://image.tmdb.org/t/p/w300{{ movie.poster_path }}"
+           alt="{{ movie.title }}" loading="lazy">
+      {% else %}
+      <div class="flex h-48 w-full items-center justify-center rounded-2xl bg-slate-100 text-xs text-slate-400">Sin imagen</div>
+      {% endif %}
+      <p class="mt-3 truncate text-sm font-semibold text-slate-800">{{ movie.title }}</p>
+      <p class="text-xs text-slate-400">{{ movie.release_date }}</p>
+    </a>
+    {% empty %}
+    <div class="col-span-5 rounded-[1.75rem] border border-dashed border-sky-200 bg-white/70 p-10 text-center text-slate-500">
+      No se encontraron resultados para "{{ query }}".
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock content %}

@@ -1,0 +1,25 @@
+{% extends "movies/base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-5 py-8">
+  <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">Películas Recomendadas</h1>
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+    {% for movie in movies %}
+    <a href="/movies/{{ movie.id }}/" class="group">
+      {% if movie.poster_path %}
+      <img class="w-full rounded-xl shadow group-hover:opacity-80 transition"
+           src="https://image.tmdb.org/t/p/w300{{ movie.poster_path }}"
+           alt="{{ movie.title }}" loading="lazy">
+      {% endif %}
+      <p class="text-sm mt-2 font-semibold text-gray-700 dark:text-gray-200 truncate">{{ movie.title }}</p>
+      <p class="text-xs text-gray-400">{{ movie.release_date }}</p>
+      {% if movie.vote_average %}
+      <p class="text-xs text-yellow-500">⭐ {{ movie.vote_average|floatformat:1 }}</p>
+      {% endif %}
+    </a>
+    {% empty %}
+    <p class="text-gray-500 col-span-5">No se pudieron cargar recomendaciones en este momento.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock content %}

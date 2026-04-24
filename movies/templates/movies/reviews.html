@@ -1,47 +1,40 @@
 {% load static %}
 
-{% for review in movie.moviereview_set.all %} 
-
-<article class="flex max-w-xl flex-col items-start justify-between 	pt-4 pb-6">
-          <div class="flex items-center gap-x-4 text-xs">
-            <span class="relative z-10 rounded-full 
-            {% if review.rating < 60 %}
-            bg-red-50 
-            {% else %}
-            bg-green-50
-            {% endif %}
-            px-3 py-1.5 
-            font-semibold text-base	 text-gray-900 ">{{review.rating}}</span>
-          </div>
-          <div class="group relative">
-            <h3 class="mt-2 text-lg/6 font-semibold text-gray-900 group-hover:text-gray-600">
-              <a href="#">
-                <span class="absolute inset-0"></span>
-                {{review.title}}
-              </a>
-            </h3>
-            
-            <p class="mt-1 line-clamp-3 text-sm/6 text-gray-600">
-            {{review.review}}
-            </p>
-          
-          </div>
-          <div class="relative mt-4 flex items-center gap-x-4">
-            <img src="{% static 'movies/knightley.jpg' %}" alt="" class="size-12 rounded-full bg-gray-50">
-            <div class="text-sm/6">
-              <p class="font-semibold text-gray-900">
-                <a href="#">
-                  <span class="absolute inset-0"></span>
-                  {{review.user}}
-                </a>
-              </p>
-              <p class="text-gray-600">Usuario desde: {{review.user.date_joined|date:"M Y"}}</p>
-            </div>
-          </div>
-</article> 
-
+{% for review in reviews %}
+<article class="mb-5 flex max-w-2xl flex-col items-start justify-between rounded-[1.75rem] border border-white/60 bg-white/85 p-6 shadow-[0_14px_50px_rgba(15,23,42,0.08)] backdrop-blur last:mb-0">
+  <div class="flex items-center gap-x-3 text-xs">
+    <span class="rounded-full px-3 py-1.5 font-semibold text-base
+      {% if review.rating >= 60 %}bg-emerald-100 text-emerald-700{% else %}bg-rose-100 text-rose-600{% endif %}">
+      {{ review.rating }}/100
+    </span>
+    <span class="font-semibold text-slate-500">{{ review.title }}</span>
+  </div>
+  <div class="group relative mt-2">
+    <p class="mt-1 text-sm leading-6 text-slate-600 line-clamp-4">{{ review.review }}</p>
+  </div>
+  <div class="relative mt-4 flex items-center gap-x-3">
+    <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-sky-100 font-bold text-sky-700 text-sm">
+      {{ review.user.username|first|upper }}
+    </div>
+    <div class="text-sm flex-1 min-w-0">
+      <p class="font-semibold text-slate-900">{{ review.user.username }}</p>
+      <p class="text-slate-500">Usuario desde {{ review.user.date_joined|date:"M Y" }}</p>
+    </div>
+    {% if user.is_authenticated and review.user_id == user.id %}
+    <form method="post" action="{% url 'delete_review' review.id %}"
+          onsubmit="return confirm('¿Eliminar esta reseña?');">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{% url 'movie_detail' review.movie.tmdb_id %}">
+      <button type="submit"
+              class="rounded-full border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 hover:text-rose-700">
+        Eliminar
+      </button>
+    </form>
+    {% endif %}
+  </div>
+</article>
 {% empty %}
-
-   <p class="text-gray-600">No hay reseñas todavía</p>
-
-{% endfor %} 
+<div class="rounded-[1.75rem] border border-dashed border-sky-200 bg-white/70 p-8 text-center text-slate-500 shadow-sm">
+  No hay reseñas todavía. ¡Sé el primero!
+</div>
+{% endfor %}
